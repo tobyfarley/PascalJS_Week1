@@ -2,13 +2,20 @@ const lineBreaks = /\n/g
 const lineFeeds = /\r/g
 
 export class PcodeTokenizer {
+    #pcode = []
+    #done = false
+    #line
+    #col
+    #peekToken = ''
+
     constructor(pcodeLines) {
-        this.pcode = []
-        this.done = false
+        this.#pcode = []
+        this.#done = false
         this.eof = false
         this.eol = false
-        this.line
-        this.col
+        this.#line
+        this.#col
+        this.#peekToken = ''
 
         for (let line of pcodeLines) {
             let ins
@@ -22,36 +29,40 @@ export class PcodeTokenizer {
                 ins = line.split(/(:)/)
                 ins.shift()
             } else {
-                ins = line.split(/\s+/g)
+                ins = line.replace('=',' =').split(/\s+/g)
+
                 if (ins[0] == '') {
                     ins[0] = ' '
                 }
             }
-            this.pcode.push(ins)
+            this.#pcode.push(ins)
         }
 
         //Pop the last empty line
 
-        this.pcode.pop()
+        this.#pcode.pop()
                   
-        this.l = this.lines(this.pcode)
+        this.l = this.#lines(this.#pcode)
     }
 
-    *tokens(line) {
-        for (this.col = 0; this.col < line.length; this.col++) {
+    *#tokens(line) {
+        for (this.#col = 0; this.#col < line.length; this.#col++) {
             this.eol = false
-            let token = line[this.col]
-            if (this.col == line.length - 1) {
+            let token = line[this.#col]
+            if (this.#col == line.length - 1) {
                 this.eol = true
+                this.#peekToken = ''
+            } else {
+                this.#peekToken = line[this.#col + 1]
             }
             yield token
         }
     }
 
-    *lines(pcode) {
-        for (this.line = 0; this.line < pcode.length; this.line++) {
-            for (let token of this.tokens(pcode[this.line])) {
-                if (this.line == pcode.length - 1 && this.eol) {
+    *#lines(pcode) {
+        for (this.#line = 0; this.#line < pcode.length; this.#line++) {
+            for (let token of this.#tokens(pcode[this.#line])) {
+                if (this.#line == pcode.length - 1 && this.eol) {
                     this.eof = true
                 }
                 yield token
@@ -80,5 +91,9 @@ export class PcodeTokenizer {
         } else {
             return token.value
         }
+    }
+
+    get peek() {
+        return this.#peekToken
     }
 }

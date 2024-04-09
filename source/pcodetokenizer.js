@@ -2,20 +2,20 @@ const lineBreaks = /\n/g
 const lineFeeds = /\r/g
 
 export class PcodeTokenizer {
-    #pcode = []
-    #done = false
+    #pcode
+    #done
     #line
     #col
-    #peekToken = ''
+    #peekToken
 
     constructor(pcodeLines) {
         this.#pcode = []
         this.#done = false
-        this.eof = false
-        this.eol = false
         this.#line
         this.#col
         this.#peekToken = ''
+        this.eof = false
+        this.eol = false
 
         for (let line of pcodeLines) {
             let ins
